@@ -1,7 +1,6 @@
 import React from 'react';
 import { Message } from '../../types';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
 
 interface Props {
   message: Message;
@@ -21,9 +20,12 @@ function formatTime(date: Date) {
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-const KapiAvatar = () => (
-  <Avatar className="size-[34px] shrink-0 shadow-[0_2px_6px_rgba(36,62,153,0.3)]" style={{ background: 'linear-gradient(135deg, #243e99, #1995d3)' }}>
-    <AvatarFallback className="text-white font-bold text-sm bg-transparent">K</AvatarFallback>
+const KapiAvatar = ({ size = 'sm' }: { size?: 'sm' | 'lg' }) => (
+  <Avatar
+    className={size === 'lg' ? 'size-10 shrink-0' : 'size-8 shrink-0'}
+    style={{ background: 'linear-gradient(135deg, #243e99, #1995d3)', boxShadow: '0 2px 8px rgba(36,62,153,0.25)' }}
+  >
+    <AvatarFallback className="text-white font-bold bg-transparent" style={{ fontSize: size === 'lg' ? 16 : 13 }}>K</AvatarFallback>
   </Avatar>
 );
 
@@ -33,43 +35,49 @@ export default function MessageBubble({ message }: Props) {
 
   if (message.type === 'tool_call') {
     return (
-      <div className="flex items-center gap-2.5 animate-in fade-in slide-in-from-bottom-2 duration-200">
+      <div className="flex items-center gap-2.5 animate-in fade-in slide-in-from-bottom-1 duration-300">
         <KapiAvatar />
-        <span className="bg-[#eef9ff] border border-[#cbe3ff] text-[#1995d3] text-sm italic px-4 py-2 rounded-full">
-          {toolLabels[message.toolName ?? ''] ?? '⚙️ Working...'}
-        </span>
+        <div className="flex items-center gap-2 bg-white border border-[#cbe3ff] rounded-2xl px-4 py-2.5 shadow-sm">
+          <span className="size-1.5 rounded-full bg-[#1995d3] animate-pulse" />
+          <span className="text-sm text-[#1995d3] font-medium">
+            {toolLabels[message.toolName ?? ''] ?? '⚙️ Working...'}
+          </span>
+        </div>
       </div>
     );
   }
 
   if (isUser) {
     return (
-      <div className="flex flex-col items-end gap-1 animate-in fade-in slide-in-from-bottom-2 duration-200">
+      <div className="flex flex-col items-end gap-1 animate-in fade-in slide-in-from-bottom-1 duration-300">
         <div
-          className="max-w-[70%] px-4 py-2.5 text-[15px] leading-relaxed break-words whitespace-pre-wrap text-white shadow-[0_2px_10px_rgba(36,62,153,0.25)]"
-          style={{
-            background: 'linear-gradient(135deg, #243e99, #1995d3)',
-            borderRadius: '20px 20px 4px 20px',
-          }}
+          className="max-w-[75%] px-4 py-2.5 text-[15px] leading-relaxed break-words whitespace-pre-wrap text-white shadow-[0_2px_12px_rgba(36,62,153,0.2)] rounded-[20px_20px_4px_20px]"
+          style={{ background: 'linear-gradient(135deg, #243e99, #1995d3)' }}
         >
           {message.content}
         </div>
-        <span className="text-[11px] text-muted-foreground mr-1">{time}</span>
+        <span className="text-[11px] text-muted-foreground/70 mr-1">{time}</span>
       </div>
     );
   }
 
+  // Special styling for the greeting message
+  const isGreeting = message.id === 'greeting';
+
   return (
-    <div className="flex items-end gap-2.5 animate-in fade-in slide-in-from-bottom-2 duration-200">
-      <KapiAvatar />
-      <div className={cn('flex flex-col gap-1')}>
+    <div className="flex items-end gap-2.5 animate-in fade-in slide-in-from-bottom-1 duration-300">
+      <KapiAvatar size={isGreeting ? 'lg' : 'sm'} />
+      <div className="flex flex-col gap-1 max-w-[75%]">
+        {isGreeting && (
+          <span className="text-xs font-semibold text-[#1995d3] ml-1 mb-0.5">Kapi</span>
+        )}
         <div
-          className="max-w-[70%] px-4 py-2.5 text-[15px] leading-relaxed break-words whitespace-pre-wrap bg-white text-[#222] shadow-sm border border-[#e5e5e5]"
-          style={{ borderRadius: '20px 20px 20px 4px' }}
+          className="px-4 py-3 text-[15px] leading-relaxed break-words whitespace-pre-wrap bg-white text-[#222] shadow-sm border border-[#e5e5e5]"
+          style={{ borderRadius: isGreeting ? '4px 20px 20px 20px' : '20px 20px 20px 4px' }}
         >
           {message.content}
         </div>
-        <span className="text-[11px] text-muted-foreground ml-1">{time}</span>
+        <span className="text-[11px] text-muted-foreground/70 ml-1">{time}</span>
       </div>
     </div>
   );
