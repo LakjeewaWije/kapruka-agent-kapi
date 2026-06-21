@@ -5,27 +5,12 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@theme {
-  --color-primary: #1995d3;
-  --color-primary-dark: #243e99;
-  --color-primary-light: #29a0db;
-  --color-primary-bg: #eef9ff;
-  --color-accent: #FE980F;
-  --color-success: #73c367;
-  --color-error: #e33729;
-  --color-text: #222222;
-  --color-text-muted: #555555;
-  --color-border: #e5e5e5;
-  --color-page-bg: #f4f4f8;
-}
-
 * {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
 }
@@ -74,14 +59,22 @@ body {
 }
 
 :root {
+  /* Kapruka brand colors */
+  --kapruka-blue: #1995d3;
+  --kapruka-navy: #243e99;
+  --kapruka-orange: #FE980F;
+  --kapruka-green: #73c367;
+  --kapruka-page-bg: #f4f4f8;
+
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
+  /* Override primary with Kapruka blue */
+  --primary: #1995d3;
+  --primary-foreground: #ffffff;
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Message } from '../../types';
-import { colors, gradients, shadows, fonts, radius } from '../../constants/theme';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { cn } from '@/lib/utils';
 
 interface Props {
   message: Message;
@@ -16,29 +17,15 @@ const toolLabels: Record<string, string> = {
   kapruka_track_order: '📡 Tracking order...',
 };
 
-const fadeIn = `
-  @keyframes fadeSlideIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-`;
-
-const avatarStyle: React.CSSProperties = {
-  width: 34, height: 34, borderRadius: radius.avatar,
-  background: gradients.avatar,
-  color: colors.bgCard,
-  display: 'flex', alignItems: 'center', justifyContent: 'center',
-  fontWeight: 700, fontSize: fonts.sizeSm + 3, flexShrink: 0,
-  boxShadow: shadows.avatar,
-};
-
-const timeStyle: React.CSSProperties = {
-  fontSize: fonts.sizeSm, color: colors.textMuted, marginTop: 4,
-};
-
 function formatTime(date: Date) {
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
+
+const KapiAvatar = () => (
+  <Avatar className="size-[34px] shrink-0 shadow-[0_2px_6px_rgba(36,62,153,0.3)]" style={{ background: 'linear-gradient(135deg, #243e99, #1995d3)' }}>
+    <AvatarFallback className="text-white font-bold text-sm bg-transparent">K</AvatarFallback>
+  </Avatar>
+);
 
 export default function MessageBubble({ message }: Props) {
   const isUser = message.role === 'user';
@@ -46,75 +33,44 @@ export default function MessageBubble({ message }: Props) {
 
   if (message.type === 'tool_call') {
     return (
-      <>
-        <style>{fadeIn}</style>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, animation: 'fadeSlideIn 0.25s ease' }}>
-          <div style={avatarStyle}>K</div>
-          <div style={{
-            backgroundColor: colors.primaryBg,
-            borderRadius: radius.pill,
-            padding: '8px 16px',
-            fontSize: fonts.sizeSm + 2,
-            color: colors.primary,
-            fontStyle: 'italic',
-            border: `1px solid ${colors.primaryBorder}`,
-          }}>
-            {toolLabels[message.toolName ?? ''] ?? '⚙️ Working...'}
-          </div>
-        </div>
-      </>
+      <div className="flex items-center gap-2.5 animate-in fade-in slide-in-from-bottom-2 duration-200">
+        <KapiAvatar />
+        <span className="bg-[#eef9ff] border border-[#cbe3ff] text-[#1995d3] text-sm italic px-4 py-2 rounded-full">
+          {toolLabels[message.toolName ?? ''] ?? '⚙️ Working...'}
+        </span>
+      </div>
     );
   }
 
   if (isUser) {
     return (
-      <>
-        <style>{fadeIn}</style>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', animation: 'fadeSlideIn 0.25s ease' }}>
-          <div style={{
-            maxWidth: '70%',
-            padding: '11px 16px',
-            fontSize: fonts.sizeBase,
-            lineHeight: fonts.lineHeight,
-            wordBreak: 'break-word',
-            whiteSpace: 'pre-wrap',
-            background: gradients.userBubble,
-            color: colors.bgCard,
-            borderRadius: `${radius.bubble}px ${radius.bubble}px 4px ${radius.bubble}px`,
-            boxShadow: shadows.bubble,
-          }}>
-            {message.content}
-          </div>
-          <span style={{ ...timeStyle, marginRight: 4 }}>{time}</span>
+      <div className="flex flex-col items-end gap-1 animate-in fade-in slide-in-from-bottom-2 duration-200">
+        <div
+          className="max-w-[70%] px-4 py-2.5 text-[15px] leading-relaxed break-words whitespace-pre-wrap text-white shadow-[0_2px_10px_rgba(36,62,153,0.25)]"
+          style={{
+            background: 'linear-gradient(135deg, #243e99, #1995d3)',
+            borderRadius: '20px 20px 4px 20px',
+          }}
+        >
+          {message.content}
         </div>
-      </>
+        <span className="text-[11px] text-muted-foreground mr-1">{time}</span>
+      </div>
     );
   }
 
   return (
-    <>
-      <style>{fadeIn}</style>
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, animation: 'fadeSlideIn 0.25s ease' }}>
-        <div style={avatarStyle}>K</div>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{
-            maxWidth: '70%',
-            padding: '11px 16px',
-            fontSize: fonts.sizeBase,
-            lineHeight: fonts.lineHeight,
-            wordBreak: 'break-word',
-            whiteSpace: 'pre-wrap',
-            backgroundColor: colors.bgCard,
-            color: colors.textPrimary,
-            borderRadius: `${radius.bubble}px ${radius.bubble}px ${radius.bubble}px 4px`,
-            boxShadow: shadows.card,
-            border: `1px solid ${colors.border}`,
-          }}>
-            {message.content}
-          </div>
-          <span style={{ ...timeStyle, marginLeft: 4 }}>{time}</span>
+    <div className="flex items-end gap-2.5 animate-in fade-in slide-in-from-bottom-2 duration-200">
+      <KapiAvatar />
+      <div className={cn('flex flex-col gap-1')}>
+        <div
+          className="max-w-[70%] px-4 py-2.5 text-[15px] leading-relaxed break-words whitespace-pre-wrap bg-white text-[#222] shadow-sm border border-[#e5e5e5]"
+          style={{ borderRadius: '20px 20px 20px 4px' }}
+        >
+          {message.content}
         </div>
+        <span className="text-[11px] text-muted-foreground ml-1">{time}</span>
       </div>
-    </>
+    </div>
   );
 }

@@ -1,5 +1,7 @@
 import React, { useState, useRef } from 'react';
-import { colors, gradients, shadows, fonts, radius } from '../../constants/theme';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
 
 interface Props {
   onSend: (text: string) => void;
@@ -15,9 +17,7 @@ export default function InputBar({ onSend, disabled }: Props) {
     if (!trimmed || disabled) return;
     onSend(trimmed);
     setText('');
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-    }
+    if (textareaRef.current) textareaRef.current.style.height = 'auto';
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -39,22 +39,12 @@ export default function InputBar({ onSend, disabled }: Props) {
   const canSend = text.trim().length > 0 && !disabled;
 
   return (
-    <div style={{
-      padding: '12px 16px 16px',
-      backgroundColor: colors.bgCard,
-      borderTop: `1px solid ${colors.border}`,
-      boxShadow: shadows.inputBar,
-    }}>
-      <div style={{
-        display: 'flex',
-        alignItems: 'flex-end',
-        gap: 10,
-        backgroundColor: colors.bgPage,
-        border: `1.5px solid ${colors.border}`,
-        borderRadius: radius.pill,
-        padding: '6px 6px 6px 16px',
-      }}>
-        <textarea
+    <div className="px-4 pt-3 pb-4 bg-white border-t border-border shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+      <div className={cn(
+        'flex items-end gap-2.5 bg-[#f4f4f8] border rounded-full px-4 py-1.5 transition-colors',
+        'border-border focus-within:border-primary/50'
+      )}>
+        <Textarea
           ref={textareaRef}
           value={text}
           onChange={handleChange}
@@ -62,43 +52,23 @@ export default function InputBar({ onSend, disabled }: Props) {
           disabled={disabled}
           placeholder="Message Kapi..."
           rows={1}
-          style={{
-            flex: 1,
-            resize: 'none',
-            border: 'none',
-            outline: 'none',
-            backgroundColor: 'transparent',
-            fontSize: fonts.sizeBase,
-            fontFamily: fonts.family,
-            lineHeight: fonts.lineHeight,
-            maxHeight: 116,
-            overflowY: 'auto',
-            color: colors.textPrimary,
-            paddingTop: 6,
-            paddingBottom: 6,
-          }}
+          className="flex-1 resize-none border-0 bg-transparent text-[15px] min-h-[36px] max-h-[116px] leading-relaxed py-1.5 shadow-none focus-visible:ring-0 focus-visible:border-0 placeholder:text-muted-foreground"
         />
-        <button
+        <Button
           onClick={handleSend}
           disabled={!canSend}
-          style={{
-            width: 38, height: 38,
-            borderRadius: radius.avatar,
-            border: 'none',
-            background: canSend ? gradients.sendButton : colors.bgSubtle,
-            color: canSend ? colors.bgCard : colors.textMuted,
-            fontSize: 16,
-            cursor: canSend ? 'pointer' : 'not-allowed',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0,
-            transition: 'all 0.15s',
-            boxShadow: canSend ? shadows.button : 'none',
-          }}
+          size="icon"
+          className={cn(
+            'shrink-0 size-[38px] rounded-full transition-all',
+            canSend
+              ? 'bg-primary hover:bg-primary/90 shadow-[0_2px_10px_rgba(36,62,153,0.35)]'
+              : 'bg-muted text-muted-foreground cursor-not-allowed'
+          )}
         >
           ▶
-        </button>
+        </Button>
       </div>
-      <p style={{ textAlign: 'center', fontSize: fonts.sizeSm, color: colors.textMuted, margin: '8px 0 0' }}>
+      <p className="text-center text-[11px] text-muted-foreground mt-2">
         Powered by Kapruka × Gemini
       </p>
     </div>

@@ -9,34 +9,23 @@ interface Props {
 
 function TypingIndicator() {
   return (
-    <>
-      <style>{`
-        @keyframes bounce {
-          0%, 80%, 100% { transform: translateY(0); }
-          40% { transform: translateY(-6px); }
-        }
-      `}</style>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <div style={{
-          width: 32, height: 32, borderRadius: '50%',
-          backgroundColor: '#0f766e', color: '#fff',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontWeight: 700, fontSize: 14, flexShrink: 0,
-        }}>K</div>
-        <div style={{
-          backgroundColor: '#f1f5f9', borderRadius: '20px 20px 20px 4px',
-          padding: '12px 16px', display: 'flex', gap: 4, alignItems: 'center',
-        }}>
-          {[0, 1, 2].map(i => (
-            <div key={i} style={{
-              width: 7, height: 7, borderRadius: '50%',
-              backgroundColor: '#94a3b8',
-              animation: `bounce 1.2s ease-in-out ${i * 0.2}s infinite`,
-            }} />
-          ))}
-        </div>
+    <div className="flex items-end gap-2.5 animate-in fade-in duration-200">
+      <div
+        className="size-[34px] shrink-0 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-[0_2px_6px_rgba(36,62,153,0.3)]"
+        style={{ background: 'linear-gradient(135deg, #243e99, #1995d3)' }}
+      >
+        K
       </div>
-    </>
+      <div className="bg-white border border-[#e5e5e5] rounded-[20px_20px_20px_4px] px-4 py-3 shadow-sm flex gap-1 items-center">
+        {[0, 1, 2].map(i => (
+          <div
+            key={i}
+            className="size-[7px] rounded-full bg-muted-foreground/50 animate-bounce"
+            style={{ animationDelay: `${i * 0.15}s` }}
+          />
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -48,14 +37,7 @@ export default function MessageList({ messages, isLoading }: Props) {
   }, [messages, isLoading]);
 
   return (
-    <div style={{
-      flex: 1,
-      overflowY: 'auto',
-      padding: '16px',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 12,
-    }}>
+    <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
       {messages.map(message => (
         <MessageBubble key={message.id} message={message} />
       ))}
