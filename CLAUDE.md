@@ -144,3 +144,26 @@ Unit tests only:
 - Vercel, automatic from main branch
 - Add REACT_APP_GEMINI_API_KEY in Vercel project environment variables
 - No vercel.json config needed for CRA
+
+## Development Workflow — HOW WE BUILD
+**IMPORTANT: Always follow this process. Never build multiple features at once.**
+
+Build one feature at a time, in this order:
+1. MCP service (`src/services/mcp.ts`) — connect to MCP, fetch tools, call tools
+2. Types (`src/types/index.ts`) — shared interfaces only
+3. Basic chat box UI — `ChatWindow`, `InputBar`, `MessageBubble`, `MessageList`
+4. Gemini service (`src/services/gemini.ts`) — wire Gemini with MCP tool loop
+5. Hooks — `useConversation`, `useChat` — connect UI to Gemini
+6. Product display — `ProductCard`, `ProductCarousel`
+7. Checkout — `CheckoutSummary`
+8. UI primitives — `Spinner`, `Badge`
+9. Utilities — `messageParser`
+10. Unit tests
+
+**Rules:**
+- Show the user the code for each feature before moving on
+- Wait for user approval before committing
+- Each feature gets its own commit with a clear message
+- Run `npx tsc --noEmit` before every commit — no type errors allowed
+- No parallel agents building multiple features simultaneously
+- The user must be able to review and understand every file before it's committed
