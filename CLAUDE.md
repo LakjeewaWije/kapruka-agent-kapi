@@ -2,168 +2,182 @@
 
 ## Project Overview
 Kapruka Agent Challenge entry — application number KAC-H9RNTC.
-Full-screen chat UI that uses the Kapruka MCP to let users browse, discover, and checkout products on Kapruka.com.
+Full-screen chat UI (Kapi) that uses the Kapruka MCP to let users browse, discover, and checkout products on Kapruka.com.
 
-## Stack
-- React (CRA) with TypeScript template
+---
+
+## Stack (CURRENT — post migration)
+- **Vite** (not CRA) + React 19 + TypeScript strict
+- **Tailwind CSS v4** via `@tailwindcss/vite` plugin — no `tailwind.config.js`, config is in `src/index.css`
+- **shadcn/ui** — Base UI variant (not Radix). Components live in `src/components/ui/`
+- `cn()` utility at `src/lib/utils.ts`
 - Google Gemini Flash 2.0 (`gemini-2.0-flash`) via `@google/generative-ai`
-- Kapruka MCP: `https://mcp.kapruka.com/mcp` (no auth, public, streamable HTTP)
+- Kapruka MCP: `https://mcp.kapruka.com/mcp` (public, streamable HTTP, JSON-RPC 2.0)
 - Jest + React Testing Library + ts-jest
 - Deploy: Vercel
 
-## Folder Structure
-src/
-├── components/
-│   ├── Chat/
-│   │   ├── ChatWindow.tsx
-│   │   ├── MessageList.tsx
-│   │   ├── MessageBubble.tsx
-│   │   └── InputBar.tsx
-│   ├── Products/
-│   │   ├── ProductCard.tsx
-│   │   └── ProductCarousel.tsx
-│   ├── Checkout/
-│   │   └── CheckoutSummary.tsx
-│   └── ui/
-│       ├── Spinner.tsx
-│       └── Badge.tsx
-├── hooks/
-│   ├── useChat.ts
-│   └── useConversation.ts
-├── services/
-│   ├── gemini.ts
-│   └── mcp.ts
-├── types/
-│   └── index.ts          # all shared interfaces and types
-├── utils/
-│   └── messageParser.ts
-├── constants/
-│   └── agent.ts
-└── __tests__/
-    ├── components/
-    │   ├── ProductCard.test.tsx
-    │   └── MessageBubble.test.tsx
-    ├── hooks/
-    │   └── useChat.test.ts
-    └── utils/
-        └── messageParser.test.ts
+## Commands
+```
+npm start        # Vite dev server → http://localhost:5173
+npm run build    # tsc && vite build
+npm test         # jest
+vercel --prod    # deploy
+```
 
 ## Environment Variables
-REACT_APP_GEMINI_API_KEY= (get free key from aistudio.google.com)
+```
+VITE_GEMINI_API_KEY=   ← NOTE: Vite prefix, NOT REACT_APP_
+```
 
-## Commands
-npm start        # dev server
-npm test         # jest
-npm run build    # production build
-vercel --prod    # deploy
+---
 
-## TypeScript
-- Strict mode on
-- All shared types and interfaces live in src/types/index.ts
-- No `any` — use `unknown` and narrow properly
-- Props interfaces defined in the same file as the component
+## Kapruka Brand Colors (defined in src/index.css :root)
+```css
+--kapruka-blue: #1995d3      /* primary */
+--kapruka-navy: #243e99      /* dark/gradient start */
+--kapruka-orange: #FE980F    /* accent/gradient end */
+--kapruka-green: #73c367     /* success / online dot */
+--kapruka-page-bg: #f4f4f8
+```
+shadcn `--primary` is overridden to `#1995d3` so `bg-primary` = Kapruka blue.
+Header gradient: `linear-gradient(135deg, #243e99 0%, #1995d3 55%, #FE980F 100%)`
 
-## Key Types (define in src/types/index.ts)
-- Message — id, role ('user' | 'assistant'), content, type ('text' | 'tool_call' | 'product_list' | 'checkout')
-- Product — id, name, price, currency, imageUrl, productUrl, inStock
-- MCPTool — name, description, inputSchema
-- MCPToolCall — toolName, args
-- MCPToolResult — toolName, result (unknown)
-- CartItem — product, quantity
-- Order — recipient, delivery, cart, giftMessage
-- CheckoutResult — payUrl, orderId, expiresAt
+---
 
-## AI Provider
-Google Gemini Flash 2.0 via `@google/generative-ai` SDK.
-Model: `gemini-2.0-flash`
-Free tier — no cost.
+## What Is Already Built
 
-## MCP Integration
-Gemini has no native MCP support. Implement a manual tool loop in src/services/mcp.ts and src/services/gemini.ts:
+### ✅ src/services/mcp.ts
+JSON-RPC 2.0 client for the Kapruka MCP. Exports:
+- `initializeMCP()` — handshake + session ID capture
+- `fetchMCPTools()` → `MCPTool[]`
+- `callMCPTool(name, args)` → `unknown`
 
-1. On app init: fetch tool definitions from https://mcp.kapruka.com/mcp
-2. Convert MCP JSON schema → Gemini FunctionDeclaration format
-3. Send to Gemini with tools array
-4. On functionCall response: POST the tool call back to the MCP endpoint
-5. Feed the result back as functionResponse
-6. Loop until Gemini returns a plain text response
+### ✅ src/types/index.ts
+- `Message` — id, role, content, type, toolName?
+- `MCPTool` — name, description, inputSchema
 
-MCP transport is Streamable HTTP. Tool calls are standard JSON-RPC POST requests to https://mcp.kapruka.com/mcp.
+### ✅ src/components/Chat/
+- `ChatWindow.tsx` — full-screen layout, greeting, suggestion chips, dot-grid bg
+- `MessageList.tsx` — scrollable, auto-scroll, typing indicator, custom scrollbar
+- `MessageBubble.tsx` — user (navy→blue gradient), assistant (white card), tool_call (pulse dot), greeting (special)
+- `InputBar.tsx` — suggestion chips, shadcn Textarea + Button, send SVG icon, keyboard hint
 
-## Available MCP Tools
-- kapruka_search_products — search catalog by keyword, category, price range
-- kapruka_get_product — full product details by ID
-- kapruka_list_categories — top-level categories
-- kapruka_list_delivery_cities — search delivery locations
-- kapruka_check_delivery — check delivery availability + cost for a city/date
-- kapruka_create_order — create guest checkout order, returns click-to-pay URL
-- kapruka_track_order — track existing order by order number
+### ✅ src/constants/theme.ts
+Still exists but largely superseded by Tailwind + CSS vars. Can be deleted later.
+
+### ✅ src/components/ui/ (shadcn)
+button, input, textarea, badge, avatar, card
+
+---
+
+## What Is NOT Yet Built (build order)
+3. ~~Chat box UI~~ ✅
+4. **`src/services/gemini.ts`** ← NEXT (new branch)
+5. **`src/hooks/useConversation.ts` + `src/hooks/useChat.ts`** ← same branch as Gemini
+6. `src/components/Products/ProductCard.tsx` + `ProductCarousel.tsx`
+7. `src/components/Checkout/CheckoutSummary.tsx`
+8. `src/utils/messageParser.ts`
+9. `src/constants/agent.ts` (SYSTEM_PROMPT, AGENT_NAME, MCP_ENDPOINT)
+10. Unit tests (`src/__tests__/`)
+
+---
 
 ## Agent Personality
-Name: "Kapi"
+Name: **Kapi**
 Tone: helpful, warm, Sri Lankan-aware
 Knows: LKR currency, local occasions (Avurudu, Vesak, Christmas, birthdays)
 Language: natural English, handle basic Sinhala input gracefully
 
-## System Prompt (in src/constants/agent.ts)
+## System Prompt (goes in src/constants/agent.ts)
+```
 You are Kapi, an AI shopping assistant for Kapruka.com — Sri Lanka's largest e-commerce platform.
 Help customers discover products, check delivery, and complete purchases.
 Always show products visually when search results are available.
 Guide the user from discovery all the way through to checkout.
 Be warm, helpful, and concise. Respond in the same language the user writes in.
 When creating an order, always confirm details with the user before calling kapruka_create_order.
+```
+
+---
+
+## MCP Integration Pattern (for Gemini service)
+Gemini has no native MCP support — manual tool loop required:
+1. `initializeMCP()` on app start
+2. `fetchMCPTools()` → convert to Gemini `FunctionDeclaration[]`
+3. Start Gemini chat with `systemInstruction` + `tools`
+4. On `functionCall` response → `callMCPTool(name, args)` → feed back as `functionResponse`
+5. Loop until Gemini returns plain text
+
+## Available MCP Tools
+- `kapruka_search_products` — search by keyword, category, price range
+- `kapruka_get_product` — full product details by ID
+- `kapruka_list_categories` — top-level categories
+- `kapruka_list_delivery_cities` — search delivery locations
+- `kapruka_check_delivery` — delivery availability + cost for city/date
+- `kapruka_create_order` — guest checkout, returns click-to-pay URL
+- `kapruka_track_order` — track order by number
+
+---
+
+## Key Types Still Needed (add to src/types/index.ts when building features)
+```ts
+Product       — id, name, price, currency, imageUrl, productUrl, inStock
+CheckoutResult — payUrl, orderId, expiresAt
+CartItem      — product, quantity
+MCPToolCall   — toolName, args
+MCPToolResult — toolName, result (unknown)
+```
+Message type will need `products?: Product[]` and `checkoutResult?: CheckoutResult` added when building product/checkout features.
+
+---
 
 ## UI Behaviour
-- Full screen chat layout — no sidebars, no widgets
-- Product results render as horizontal card carousels (image, name, price in LKR)
-- Tool calls show a "Searching..." / "Checking delivery..." skeleton state
-- Checkout summary shows order details + a prominent "Pay Now" button linking to the MCP-returned pay URL
-- Message bubbles: user on right, Kapi on left with avatar
+- Full-screen chat, no sidebars
+- Product results → horizontal card carousel (image, name, LKR price)
+- Tool calls → white card with animated blue pulse dot
+- Checkout → card with Pay Now button → MCP-returned pay URL
+- Suggestion chips disappear after first user message
 
-## Judging Rubric (build priority order)
-1. Experience & polish — 30pts — smooth, fast, beautiful UI
-2. Visual richness — 20pts — product images, cards, carousels
-3. Personality — 15pts — Kapi feels alive, not robotic
-4. Usefulness — 15pts — actually helps user find and buy something
-5. End-to-end checkout — 15pts — full flow from search to pay link
-6. Creativity — 5pts — surprise the judges
+## Judging Rubric (priority order)
+1. Experience & polish — 30pts
+2. Visual richness — 20pts
+3. Personality — 15pts
+4. Usefulness — 15pts
+5. End-to-end checkout — 15pts
+6. Creativity — 5pts
 
-## Out of Scope
-- User auth
-- Persistent cart (session memory only)
-- Real payment processing (MCP returns a pay link, render it as a button)
+---
 
-## Testing Scope
-Unit tests only:
-- ProductCard renders correctly
-- MessageBubble handles text and tool states
-- messageParser correctly extracts product data from tool results
-- useChat manages message state correctly (mock Gemini + MCP)
+## Development Workflow — MUST FOLLOW
+1. **One feature at a time** — show code to user, wait for approval before committing
+2. **One commit per feature** — clear message, `npx tsc --noEmit` must pass first
+3. **Branch strategy**: new feature branch per major feature group, PR to `main`
+4. **No parallel agents building multiple features** — user must stay in control
+5. **Current branch**: `main` (PR #1 merged). Start next feature on a new branch.
+
+## Branch History
+- `feature/ui-and-mcp` → PR #1 merged → MCP service + Chat UI + Vite migration + shadcn
+
+## Folder Structure
+```
+src/
+├── components/
+│   ├── Chat/          ✅ ChatWindow, MessageList, MessageBubble, InputBar
+│   ├── Products/      ❌ ProductCard, ProductCarousel (not built)
+│   ├── Checkout/      ❌ CheckoutSummary (not built)
+│   └── ui/            ✅ shadcn: button, input, textarea, badge, avatar, card
+├── hooks/             ❌ useChat, useConversation (not built)
+├── services/
+│   ├── mcp.ts         ✅
+│   └── gemini.ts      ❌ (not built)
+├── types/index.ts     ✅ (partial — needs Product, CheckoutResult etc.)
+├── utils/             ❌ messageParser (not built)
+├── constants/         ❌ agent.ts (not built), theme.ts (built but largely unused)
+├── lib/utils.ts       ✅ shadcn cn() utility
+└── __tests__/         ❌ (not built)
+```
 
 ## Deployment
-- Vercel, automatic from main branch
-- Add REACT_APP_GEMINI_API_KEY in Vercel project environment variables
-- No vercel.json config needed for CRA
-
-## Development Workflow — HOW WE BUILD
-**IMPORTANT: Always follow this process. Never build multiple features at once.**
-
-Build one feature at a time, in this order:
-1. MCP service (`src/services/mcp.ts`) — connect to MCP, fetch tools, call tools
-2. Types (`src/types/index.ts`) — shared interfaces only
-3. Basic chat box UI — `ChatWindow`, `InputBar`, `MessageBubble`, `MessageList`
-4. Gemini service (`src/services/gemini.ts`) — wire Gemini with MCP tool loop
-5. Hooks — `useConversation`, `useChat` — connect UI to Gemini
-6. Product display — `ProductCard`, `ProductCarousel`
-7. Checkout — `CheckoutSummary`
-8. UI primitives — `Spinner`, `Badge`
-9. Utilities — `messageParser`
-10. Unit tests
-
-**Rules:**
-- Show the user the code for each feature before moving on
-- Wait for user approval before committing
-- Each feature gets its own commit with a clear message
-- Run `npx tsc --noEmit` before every commit — no type errors allowed
-- No parallel agents building multiple features simultaneously
-- The user must be able to review and understand every file before it's committed
+- Vercel, auto-deploy from `main`
+- Add `VITE_GEMINI_API_KEY` in Vercel project env vars
+- No `vercel.json` needed
